@@ -12,6 +12,8 @@ func (e *Error) Error() string {
 }
 
 var (
-	NotFound       = Error{http.StatusNotFound, "resource not found"}
-	NotImplemented = Error{http.StatusNotImplemented, "not implemented"}
+	NotFound         = Error{http.StatusNotFound, "resource not found"}
+	NotImplemented   = Error{http.StatusNotImplemented, "not implemented"}
+	EncInvalidConfig = Error{http.StatusUnprocessableEntity, "invalid enclosure configuration requested"}
+	EncNotEmpty      = Error{http.StatusConflict, "unable to adjust enclosure settings while dinos in the enclosure"}
 )

@@ -29,7 +29,7 @@ type EnclosureControl interface {
 	// WARNING: The dev team does not currently have a digital model to validate the number of
 	// dinos of a speicies allowed to cohabitate per average space. Without this model we
 	// rely entirely on the science team to accurately set the value.
-	SetEnclosureCapacity(dinoSpecies string) (err *Error)
+	SetEnclosureCapacity(newEncCap *EnclosureCapacity) (configuredCapacity *EnclosureCapacity, err *Error)
 
 	// Returns the current in-use enclosure settings
 	ReadEnclosureState() (enclosureState *Enclosure, err *Error)
@@ -54,8 +54,23 @@ func (e *Enclosure) MoveDinosToEnclosure(dinosToMove []*Dinosaur) (moveSuccess b
 	return false, &NotImplemented
 }
 
-func (e *Enclosure) SetEnclosureCapacity(dinoSpecies string) (err *Error) {
-	return &NotImplemented
+func (e *Enclosure) SetEnclosureCapacity(newEncCap *EnclosureCapacity) (configuredCapacity *EnclosureCapacity, err *Error) {
+	//Validate input
+	if newEncCap == nil {
+		return nil, &EncInvalidConfig
+	}
+
+	//Safety Check: Enclosure can not currently be holding dinos
+	if len(e.contains) != 0 {
+		//ERROR: Can't change capacity if enc not empty
+		return nil, &EncNotEmpty
+	}
+
+	//Update enclosure configuration
+	e.capacity = newEncCap
+
+	//Success-> return now-running capacity configuration
+	return e.capacity, nil
 }
 
 func (e *Enclosure) ReadEnclosureState() (enclosureState *Enclosure, err *Error) {
