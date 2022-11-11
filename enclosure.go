@@ -20,11 +20,6 @@ type EnclosureControl interface {
 	// an empty slice is returned.
 	ListDinosInEnclosure(filterOpts *EnclosureFilter) (dinosInCage []*Dinosaur, err *Error)
 
-	// SAFETY: Moving dinos is a safety-critical item as some loose dinos may pose a safety risk to
-	// the parks Dino-Handler personnel as well as to the park infrastructure
-	// Moving dinos between cages is an automated operation to protect park staff
-	MoveDinosToEnclosure(dinosToMove []*Dinosaur) (moveSuccess bool, err *Error)
-
 	// Sets the number of dinos of a specific species that can be in this enclosure.
 	// WARNING: The dev team does not currently have a digital model to validate the number of
 	// dinos of a speicies allowed to cohabitate per average space. Without this model we
@@ -47,11 +42,8 @@ type EnclosureFilter struct {
 }
 
 func (e *Enclosure) ListDinosInEnclosure(filterOpts *EnclosureFilter) (dinosInCage []*Dinosaur, err *Error) {
-	return nil, &NotImplemented
-}
 
-func (e *Enclosure) MoveDinosToEnclosure(dinosToMove []*Dinosaur) (moveSuccess bool, err *Error) {
-	return false, &NotImplemented
+	return nil, &NotImplemented
 }
 
 func (e *Enclosure) SetEnclosureCapacity(newEncCap *EnclosureCapacity) (configuredCapacity *EnclosureCapacity, err *Error) {
@@ -85,7 +77,7 @@ func (e *Enclosure) CmdPwrState(commandedPwrState bool) (currentPwrState *bool, 
 	}
 
 	//Safety Check: Do not power down if dinos in enclosure
-	if len(e.contains) > 0 && commandedPwrState == false {
+	if len(e.contains) > 0 && !commandedPwrState {
 		return nil, &EncNotEmpty
 	}
 
@@ -101,8 +93,4 @@ func (e *Enclosure) GetPwrState() (currentPwrState string) {
 	}
 
 	return "DOWN"
-}
-
-func returnBool(val bool) *bool {
-	return &val
 }
