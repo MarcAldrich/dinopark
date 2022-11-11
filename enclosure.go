@@ -39,7 +39,7 @@ type EnclosureControl interface {
 	CmdPwrState(commandedPwrState bool) (currentPwrState *bool, err *Error)
 
 	// Returns "ACTIVE" or "DOWN"
-	GetPwrState() (currentPwrState string, err *Error)
+	GetPwrState() (currentPwrState string)
 }
 
 type EnclosureFilter struct {
@@ -95,8 +95,12 @@ func (e *Enclosure) CmdPwrState(commandedPwrState bool) (currentPwrState *bool, 
 	return &e.powerState, nil
 }
 
-func (e *Enclosure) GetPwrState() (currentPwrState string, err *Error) {
-	return "", &NotImplemented
+func (e *Enclosure) GetPwrState() (currentPwrState string) {
+	if e.powerState {
+		return "ACTIVE"
+	}
+
+	return "DOWN"
 }
 
 func returnBool(val bool) *bool {

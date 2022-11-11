@@ -235,3 +235,43 @@ func TestEnclosure_CmdPwrState(t *testing.T) {
 func ptrToBool(val bool) *bool {
 	return &val
 }
+
+func TestEnclosure_GetPwrState(t *testing.T) {
+	type fields struct {
+		contains   []*Dinosaur
+		capacity   *EnclosureCapacity
+		powerState bool
+	}
+	tests := []struct {
+		name                string
+		fields              fields
+		wantCurrentPwrState string
+	}{
+		{
+			name: "Powered up returns 'ACTIVE'",
+			fields: fields{
+				contains:   []*Dinosaur{},
+				capacity:   &EnclosureCapacity{},
+				powerState: true,
+			},
+			wantCurrentPwrState: "ACTIVE",
+		},
+		{
+			name:                "Powered down returns 'DOWN'",
+			fields:              fields{},
+			wantCurrentPwrState: "DOWN",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &Enclosure{
+				contains:   tt.fields.contains,
+				capacity:   tt.fields.capacity,
+				powerState: tt.fields.powerState,
+			}
+			if gotCurrentPwrState := e.GetPwrState(); gotCurrentPwrState != tt.wantCurrentPwrState {
+				t.Errorf("Enclosure.GetPwrState() = %v, want %v", gotCurrentPwrState, tt.wantCurrentPwrState)
+			}
+		})
+	}
+}
