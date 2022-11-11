@@ -19,6 +19,9 @@ REF: http://www.catb.org/~esr/writings/taoup/html/
 
 REF: https://cloud.google.com/apis/design
 
+## What isn't here?
+Auth, audit, logging, obervability, monitoring.
+These topics take more time to build out and may end up in this project in the future. To keep the interview timelines in mind along with none of these topics being directly requested they have been left out intentionally to focus on the specified code topics in prompts.
 
 ---
 # Project how to

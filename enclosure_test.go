@@ -165,3 +165,73 @@ func TestEnclosure_SetEnclosureCapacity(t *testing.T) {
 		})
 	}
 }
+
+func TestEnclosure_CmdPwrState(t *testing.T) {
+	type fields struct {
+		contains   []*Dinosaur
+		capacity   *EnclosureCapacity
+		powerState bool
+	}
+	type args struct {
+		commandedPwrState bool
+	}
+	tests := []struct {
+		name                string
+		fields              fields
+		args                args
+		wantCurrentPwrState *bool
+		wantErr             *Error
+	}{
+		{
+			name: "expect success: init to power on",
+			fields: fields{
+				contains:   []*Dinosaur{},
+				capacity:   &EnclosureCapacity{},
+				powerState: false,
+			},
+			args: args{
+				commandedPwrState: true,
+			},
+			wantCurrentPwrState: ptrToBool(true),
+			wantErr:             nil,
+		},
+		{
+			name: "expect error: dino in enc to start-> attempt pwr down",
+			fields: fields{
+				contains: []*Dinosaur{{}},
+				capacity: &EnclosureCapacity{
+					species:  "species1",
+					capacity: 1,
+				},
+				powerState: true,
+			},
+			args: args{
+				commandedPwrState: false,
+			},
+			wantCurrentPwrState: nil,
+			wantErr:             &EncNotEmpty,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &Enclosure{
+				contains:   tt.fields.contains,
+				capacity:   tt.fields.capacity,
+				powerState: tt.fields.powerState,
+			}
+			gotCurrentPwrState, gotErr := e.CmdPwrState(tt.args.commandedPwrState)
+			//NOTE: protecting test from dereferencing a nil ptr
+			if gotCurrentPwrState != nil && tt.wantCurrentPwrState != nil &&
+				*gotCurrentPwrState != *tt.wantCurrentPwrState {
+				t.Errorf("Enclosure.CmdPwrState() gotCurrentPwrState = %v, want %v", gotCurrentPwrState, tt.wantCurrentPwrState)
+			}
+			if !reflect.DeepEqual(gotErr, tt.wantErr) {
+				t.Errorf("Enclosure.CmdPwrState() gotErr = %v, want %v", gotErr, tt.wantErr)
+			}
+		})
+	}
+}
+
+func ptrToBool(val bool) *bool {
+	return &val
+}

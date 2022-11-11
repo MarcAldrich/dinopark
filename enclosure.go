@@ -36,7 +36,7 @@ type EnclosureControl interface {
 
 	// Allows the system to set the power state. Will return error if attempting
 	// to power down an enclosure with dinos currently in the enclosure.
-	CmdPwrState(commandedPwrState bool) (currentPwrState bool, err *Error)
+	CmdPwrState(commandedPwrState bool) (currentPwrState *bool, err *Error)
 
 	// Returns "ACTIVE" or "DOWN"
 	GetPwrState() (currentPwrState string, err *Error)
@@ -74,13 +74,31 @@ func (e *Enclosure) SetEnclosureCapacity(newEncCap *EnclosureCapacity) (configur
 }
 
 func (e *Enclosure) ReadEnclosureState() (enclosureState *Enclosure, err *Error) {
+	//NOTE: Short implementation: This abstraction provides an easy place to add any data/config validation required in the future
 	return e, nil
 }
 
-func (e *Enclosure) CmdPwrState(commandedPwrState bool) (currentPwrState bool, err *Error) {
-	return false, &NotImplemented
+func (e *Enclosure) CmdPwrState(commandedPwrState bool) (currentPwrState *bool, err *Error) {
+	//Validate/Optimization: Do nothing if commanded state matches existing power state
+	if commandedPwrState == e.powerState {
+		return &e.powerState, nil
+	}
+
+	//Safety Check: Do not power down if dinos in enclosure
+	if len(e.contains) > 0 && commandedPwrState == false {
+		return nil, &EncNotEmpty
+	}
+
+	//apply power state
+	e.powerState = commandedPwrState
+
+	return &e.powerState, nil
 }
 
 func (e *Enclosure) GetPwrState() (currentPwrState string, err *Error) {
 	return "", &NotImplemented
+}
+
+func returnBool(val bool) *bool {
+	return &val
 }
