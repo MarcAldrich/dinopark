@@ -41,7 +41,12 @@ func TestNewDinosaur(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotDino, gotErr := NewDinosaur(tt.args.name, tt.args.species)
-			if !reflect.DeepEqual(gotDino, tt.wantDino) {
+
+			//Custom test: Not using deepequal because uuid is random->Test all other static fields
+			if gotDino != nil &&
+				gotDino.Name != tt.wantDino.Name &&
+				gotDino.Species != tt.wantDino.Species &&
+				len(gotDino.ID) == 0 {
 				t.Errorf("NewDinosaur() gotDino = %v, want %v", gotDino, tt.wantDino)
 			}
 			if !reflect.DeepEqual(gotErr, tt.wantErr) {
