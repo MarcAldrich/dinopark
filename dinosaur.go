@@ -1,6 +1,11 @@
 package dinopark
 
+import (
+	"github.com/google/uuid"
+)
+
 type Dinosaur struct {
+	ID      uuid.UUID
 	Name    string
 	Species DinoSpecies
 }
@@ -11,6 +16,7 @@ func NewDinosaur(name string, species DinoSpecies) (dino *Dinosaur, err *Error) 
 	}
 
 	return &Dinosaur{
+		ID:      uuid.New(),
 		Name:    name,
 		Species: species,
 	}, err
