@@ -170,17 +170,19 @@ func TestPlaces_RegisterPlace(t *testing.T) {
 		plcToReg *Place
 	}
 	tests := []struct {
-		name         string
-		fields       fields
-		args         args
-		wantPlcAdded *Place
-		wantErr      *Error
+		name               string
+		fields             fields
+		expectedPlaceCount int
+		args               args
+		wantPlcAdded       *Place
+		wantErr            *Error
 	}{
 		{
 			name: "add 1 to none",
 			fields: fields{
 				Places: NewPlaces(),
 			},
+			expectedPlaceCount: 1,
 			args: args{
 				plcToReg: &Place{
 					ID:       [16]byte{},
@@ -211,6 +213,7 @@ func TestPlaces_RegisterPlace(t *testing.T) {
 					mu: &sync.Mutex{},
 				},
 			},
+			expectedPlaceCount: 2,
 			args: args{
 				plcToReg: &Place{
 					ID:       [16]byte{},
@@ -244,9 +247,8 @@ func TestPlaces_RegisterPlace(t *testing.T) {
 			}
 
 			//COMPARE BACKING SLICE FOR CORRECT LENGTH
-			expectedLen := len(tt.fields.Places.Places) + 1 //+1 because arg takes a single place, not a list.
-			if expectedLen != len(p.Places) {
-				t.Errorf("Place not added: expected number of place entries to be %d; instead had %d entries", expectedLen, len(p.Places))
+			if tt.expectedPlaceCount != len(p.Places) {
+				t.Errorf("Place not added: expected number of place entries to be %d; instead had %d entries", tt.expectedPlaceCount, len(p.Places))
 			}
 		})
 	}
