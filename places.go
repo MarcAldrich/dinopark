@@ -3,17 +3,24 @@ package dinopark
 type Place struct {
 	Name     string
 	Location string
-	Kind     PlaceType
+	Kind     PlaceKind
 }
 
-type PlaceFilter struct{}
+type PlaceFilter struct {
+	ByKind *PlaceKind `json:'by_kind'`
+}
 
-type PlaceType uint8
+type PlaceKind uint8
 
 const (
-	LAB PlaceType = iota
+	LAB PlaceKind = iota
 	ENCLOSURE
 )
+
+func NewPlaceKind(kind PlaceKind) *PlaceKind {
+	plKind := kind
+	return &plKind
+}
 
 func (p Place) String() string {
 	strToRet := ""

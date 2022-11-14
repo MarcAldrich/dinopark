@@ -53,11 +53,11 @@ type EnclosureControl interface {
 }
 
 type EnclosureFilter struct {
-	ByPowerState        bool        //Use-case: Find all "DOWN" enclosures
-	ByNumberOfDinos     uint16      //Helpful to find empty enclosures
-	ByCapacityRemaining uint16      //Use-case: find an enclosure with room for a dino
-	BySpecies           DinoSpecies //Use-case: find enclosures with same species
-	ByDiet              DinoDiet    //Use-case: find an enclosure with only herbivores/carnivores
+	ByPowerState        *bool        //Use-case: Find all "DOWN" enclosures
+	ByNumberOfDinos     *uint16      //Helpful to find empty enclosures
+	ByCapacityRemaining *uint16      //Use-case: find an enclosure with room for a dino
+	BySpecies           *DinoSpecies //Use-case: find enclosures with same species
+	ByDiet              *DinoDiet    //Use-case: find an enclosure with only herbivores/carnivores
 }
 
 func (e *Enclosure) ListDinosInEnclosure(filterOpts *EnclosureFilter) (dinosInCage []*Dinosaur, err *Error) {

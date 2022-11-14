@@ -4,14 +4,24 @@ package dinopark
 var _ ParkControl = (*Park)(nil)
 
 type Park struct {
-	Places []Place    //Holds all places in a park
-	Dinos  []Dinosaur //Holds all dinos in the park
+	Dinos      []Dinosaur  //Holds references to all dinos in the park
+	Enclosures []Enclosure //Holds references to all enclosures in park
+	Places     []Place     //Holds references to all places in a park
+
+}
+
+func NewPark() *Park {
+	return &Park{
+		Dinos:      []Dinosaur{},
+		Enclosures: []Enclosure{},
+		Places:     []Place{},
+	}
 }
 
 type ParkControl interface {
 	//PLACE CONTROL
 	//List places {by-type, by-type-and-power-status, ...}
-	ListPlaces(filter PlaceFilter) (places []Place, err *Error)
+	ListPlaces(filter *PlaceFilter) (places []Place, err *Error)
 	//Register a new enclosure
 	RegisterPlace(plcToReg *Enclosure) (plcAdded *Enclosure, err *Error)
 	//Deregisteres a decomissioned place {lab, enclosure, etc}
@@ -32,15 +42,34 @@ type ParkControl interface {
 	MoveDinos(dinosToMove []*Dinosaur, dstPlc *Place) (dinosMoved []*Dinosaur, err *Error)
 }
 
-func (p Park) ListPlaces(filter PlaceFilter) (places []Place, err *Error) {
+func (p Park) ListPlaces(filter *PlaceFilter) (places []Place, err *Error) {
+	//Short-circuit: If filter empty return all
+	if filter == nil {
+		return p.Places, nil
+	}
+
+	//Was a filter specified?
+	var plTypeFilter *PlaceKind
+	if filter.ByKind != nil {
+		plTypeFilter = filter.ByKind
+	}
+
+	//Build result by filter
+	for _, pl := range p.Places {
+		if plTypeFilter == &pl.Kind {
+			//Case: Filter matches entry add to result
+			places = append(places, pl)
+		}
+	}
+
+	return places, nil
+}
+
+func (p *Park) RegisterPlace(plcToReg *Enclosure) (plcAdded *Enclosure, err *Error) {
 	return nil, &NotImplemented
 }
 
-func (p Park) RegisterPlace(plcToReg *Enclosure) (plcAdded *Enclosure, err *Error) {
-	return nil, &NotImplemented
-}
-
-func (p Park) RemovePlace(plcToRemove *Enclosure) (plcRemoved *Place, err *Error) {
+func (p *Park) RemovePlace(plcToRemove *Enclosure) (plcRemoved *Place, err *Error) {
 	return nil, &NotImplemented
 }
 
@@ -48,11 +77,11 @@ func (p Park) ListDinos(filter DinoFilter) (dinos []Dinosaur, err *Error) {
 	return nil, &NotImplemented
 }
 
-func (p Park) RegisterDino(dinoToReg *Dinosaur) (dinoReged *Dinosaur, err *Error) {
+func (p *Park) RegisterDino(dinoToReg *Dinosaur) (dinoReged *Dinosaur, err *Error) {
 	return nil, &NotImplemented
 }
 
-func (p Park) RemoveDino(dinoToRem *Dinosaur) (dinoRmed *Dinosaur, err *Error) {
+func (p *Park) RemoveDino(dinoToRem *Dinosaur) (dinoRmed *Dinosaur, err *Error) {
 	return nil, &NotImplemented
 }
 

@@ -23,9 +23,9 @@ func NewDinosaur(name string, species DinoSpecies) (dino *Dinosaur, err *Error) 
 }
 
 type DinoFilter struct {
-	ByDiet    string
-	BySpecies string
-	ByName    string
+	ByDiet    *DinoDiet
+	BySpecies *DinoSpecies
+	ByName    *string
 }
 
 type DinoSpecies uint16
