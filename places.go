@@ -159,10 +159,16 @@ func (pls *Places) RemovePlace(plcToRemove *Place) (plcRemoved *Place, err *Erro
 		return nil, &InvalidArg
 	}
 
+	mapLenBeforeDelete := len(pls.Places)
 	//CONCURRENT SECTION
 	pls.mu.Lock()
-	defer pls.mu.Unlock()
-	//HOLDING LOCK
+	pls.mu.Unlock()
+	//HOLDING LOCK: Critical section
+	delete(pls.Places, plcToRemove.ID) //delete is a no-op if not found; use len of map as validation of delete
+	if mapLenBeforeDelete-len(pls.Places) != 1 {
+		//Error: entry not found
+		return nil, &NotFound
+	}
 
-	return nil, &NotImplemented
+	return plcToRemove, nil
 }

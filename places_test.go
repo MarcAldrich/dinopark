@@ -253,3 +253,95 @@ func TestPlaces_RegisterPlace(t *testing.T) {
 		})
 	}
 }
+
+func TestPlaces_RemovePlace(t *testing.T) {
+	type fields struct {
+		Places map[uuid.UUID]*Place
+		mu     *sync.Mutex
+	}
+	type args struct {
+		plcToRemove *Place
+	}
+	tests := []struct {
+		name                      string
+		fields                    fields
+		args                      args
+		expectedLengthAfterRemove int
+		wantPlcRemoved            *Place
+		wantErr                   *Error
+	}{
+		{
+			name: "rem 1 to 0* -> expect length of 0",
+			fields: fields{
+				Places: map[uuid.UUID]*Place{
+					[16]byte{'a', 'a'}: {
+						ID:       [16]byte{'a', 'a'},
+						Name:     "Place1",
+						Location: "Loc1",
+						Kind:     ENCLOSURE,
+					},
+				},
+				mu: &sync.Mutex{},
+			},
+			args: args{
+				plcToRemove: &Place{
+					ID:       [16]byte{'a', 'a'},
+					Name:     "Place1",
+					Location: "Loc1",
+					Kind:     LAB,
+				},
+			},
+			expectedLengthAfterRemove: 0,
+			wantPlcRemoved: &Place{
+				ID:       [16]byte{'a', 'a'},
+				Name:     "Place1",
+				Location: "Loc1",
+				Kind:     LAB,
+			},
+			wantErr: nil,
+		},
+		{
+			name: "expect not found",
+			fields: fields{
+				Places: map[uuid.UUID]*Place{
+					[16]byte{'a', 'a'}: {
+						ID:       [16]byte{'a', 'a'},
+						Name:     "Place1",
+						Location: "Loc1",
+						Kind:     ENCLOSURE,
+					},
+				},
+				mu: &sync.Mutex{},
+			},
+			args: args{
+				plcToRemove: &Place{
+					ID:       [16]byte{'b', 'b'},
+					Name:     "Place2",
+					Location: "Loc2",
+					Kind:     LAB,
+				},
+			},
+			expectedLengthAfterRemove: 1,
+			wantPlcRemoved:            nil,
+			wantErr:                   &NotFound,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pls := &Places{
+				Places: tt.fields.Places,
+				mu:     tt.fields.mu,
+			}
+			gotPlcRemoved, gotErr := pls.RemovePlace(tt.args.plcToRemove)
+			if !reflect.DeepEqual(gotPlcRemoved, tt.wantPlcRemoved) {
+				t.Errorf("Places.RemovePlace() gotPlcRemoved = %v, want %v", gotPlcRemoved, tt.wantPlcRemoved)
+			}
+			if !reflect.DeepEqual(gotErr, tt.wantErr) {
+				t.Errorf("Places.RemovePlace() gotErr = %v, want %v", gotErr, tt.wantErr)
+			}
+			if tt.expectedLengthAfterRemove != len(pls.Places) {
+				t.Errorf("Places.RemovePlace() length of backing map after removal does not match expected length for test case; expected: %d\t len(map): %d", tt.expectedLengthAfterRemove, len(pls.Places))
+			}
+		})
+	}
+}
