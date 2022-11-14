@@ -1,29 +1,96 @@
 package dinopark
 
+// This line ensures that the interface is fully implemented at compile time which avoids waiting for a runtime panic without it.
+var _ EnclosureControl = (*Enclosure)(nil)
+
 // The enclosure struct digitally represents the physical cage in the park
 type Enclosure struct {
 	contains   []*Dinosaur
-	capacity   uint16
+	capacity   *EnclosureCapacity
 	powerState bool
+}
+
+type EnclosureCapacity struct {
+	species  string
+	capacity uint16
 }
 
 type EnclosureControl interface {
 	// Returns the dinos in the cage or error. If no dinosaurs are registered in the cage
 	// an empty slice is returned.
-	ListDinosInCage(filterOpts *EnclosureFilter) (dinosInCage []*Dinosaur, err error)
-
-	// SAFETY: Moving dinos is a safety-critical item as some loose dinos may pose a safety risk to
-	// the parks Dino-Handler personnel as well as to the park infrastructure
-	//
-	RequestMoveDinosToCage(dinosToMove []*Dinosaur) (moveSuccess bool, err error)
+	ListDinosInEnclosure(filterOpts *EnclosureFilter) (dinosInCage []*Dinosaur, err *Error)
 
 	// Sets the number of dinos of a specific species that can be in this enclosure.
 	// WARNING: The dev team does not currently have a digital model to validate the number of
 	// dinos of a speicies allowed to cohabitate per average space. Without this model we
 	// rely entirely on the science team to accurately set the value.
-	SetEnclosureCapacity(dinoSpecies string) (err error) //TODO: Finish this protoype by updating the dinoSpecies type
+	SetEnclosureCapacity(newEncCap *EnclosureCapacity) (configuredCapacity *EnclosureCapacity, err *Error)
+
+	// Returns the current in-use enclosure settings
+	ReadEnclosureState() (enclosureState *Enclosure, err *Error)
+
+	// Allows the system to set the power state. Will return error if attempting
+	// to power down an enclosure with dinos currently in the enclosure.
+	CmdPwrState(commandedPwrState bool) (currentPwrState *bool, err *Error)
+
+	// Returns "ACTIVE" or "DOWN"
+	GetPwrState() (currentPwrState string)
 }
 
 type EnclosureFilter struct {
 	//TODO: implement business reqs with filter statements over from readme
+}
+
+func (e *Enclosure) ListDinosInEnclosure(filterOpts *EnclosureFilter) (dinosInCage []*Dinosaur, err *Error) {
+
+	return nil, &NotImplemented
+}
+
+func (e *Enclosure) SetEnclosureCapacity(newEncCap *EnclosureCapacity) (configuredCapacity *EnclosureCapacity, err *Error) {
+	//Validate input
+	if newEncCap == nil {
+		return nil, &EncInvalidConfig
+	}
+
+	//Safety Check: Enclosure can not currently be holding dinos
+	if len(e.contains) != 0 {
+		//ERROR: Can't change capacity if enc not empty
+		return nil, &EncNotEmpty
+	}
+
+	//Update enclosure configuration
+	e.capacity = newEncCap
+
+	//Success-> return now-running capacity configuration
+	return e.capacity, nil
+}
+
+func (e *Enclosure) ReadEnclosureState() (enclosureState *Enclosure, err *Error) {
+	//NOTE: Short implementation: This abstraction provides an easy place to add any data/config validation required in the future
+	return e, nil
+}
+
+func (e *Enclosure) CmdPwrState(commandedPwrState bool) (currentPwrState *bool, err *Error) {
+	//Validate/Optimization: Do nothing if commanded state matches existing power state
+	if commandedPwrState == e.powerState {
+		return &e.powerState, nil
+	}
+
+	//Safety Check: Do not power down if dinos in enclosure
+	if len(e.contains) > 0 && !commandedPwrState {
+		return nil, &EncNotEmpty
+	}
+
+	//apply power state
+	e.powerState = commandedPwrState
+
+	return &e.powerState, nil
+}
+
+func (e *Enclosure) GetPwrState() (currentPwrState string) {
+	if e.powerState {
+		return "ACTIVE"
+	}
+
+	return "DOWN"
 }

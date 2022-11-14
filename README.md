@@ -19,6 +19,9 @@ REF: http://www.catb.org/~esr/writings/taoup/html/
 
 REF: https://cloud.google.com/apis/design
 
+## What isn't here?
+Auth, audit, logging, obervability, monitoring.
+These topics take more time to build out and may end up in this project in the future. To keep the interview timelines in mind along with none of these topics being directly requested they have been left out intentionally to focus on the specified code topics in prompts.
 
 ---
 # Project how to
@@ -35,8 +38,7 @@ TODO: Fill in
 ## Problem Statement and context
 It's 1993 and you're appling to become the lead software developer for the new Dino Park! The current software development team would like to see an example of how you would implement software to solve the following project:
 ```
-Park operations needs a system to keep track of the different cages around the park and the
-different dinosaurs in each one. You'll need to integrate physical cage control and implement a dinosaur registration system into an API for the internal tools team. They are writing a web frontend client to allow the park construction workers to create new cages as dinosaurs are hatched. The Park's science and health teams will also require the ability to view and update the statuses of dinosaurs and cages.
+Park operations needs a system to keep track of the different cages around the park and the different dinosaurs in each one. You'll need to integrate physical cage control and implement a dinosaur registration system into an API for the internal tools team. They are writing a web frontend client to allow the park construction workers to create new cages as dinosaurs are hatched. The Park's science and health teams will also require the ability to view and update the statuses of dinosaurs and cages.
 ```
 
 
