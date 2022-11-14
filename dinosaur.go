@@ -5,6 +5,17 @@ type Dinosaur struct {
 	Species DinoSpecies
 }
 
+func NewDinosaur(name string, species DinoSpecies) (dino *Dinosaur, err *Error) {
+	if name == "" {
+		return nil, &MissingArg
+	}
+
+	return &Dinosaur{
+		Name:    name,
+		Species: species,
+	}, err
+}
+
 type DinoFilter struct {
 	ByDiet    string
 	BySpecies string
