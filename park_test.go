@@ -2,6 +2,7 @@ package dinopark
 
 import (
 	"reflect"
+	"sync"
 	"testing"
 )
 
@@ -9,7 +10,7 @@ func TestPark_ListPlaces(t *testing.T) {
 	type fields struct {
 		Dinos      []Dinosaur
 		Enclosures []Enclosure
-		Places     []Place
+		Places     Places
 	}
 	type args struct {
 		filter *PlaceFilter
@@ -26,7 +27,7 @@ func TestPark_ListPlaces(t *testing.T) {
 			fields: fields{
 				Dinos:      []Dinosaur{},
 				Enclosures: []Enclosure{},
-				Places:     []Place{},
+				Places:     Places{},
 			},
 			args: args{
 				filter: nil,
@@ -39,12 +40,15 @@ func TestPark_ListPlaces(t *testing.T) {
 			fields: fields{
 				Dinos:      []Dinosaur{},
 				Enclosures: []Enclosure{},
-				Places: []Place{{
-					//This place should NOT match filter
-					Name:     "Not a match",
-					Location: "lab",
-					Kind:     ENCLOSURE,
-				}},
+				Places: Places{
+					Places: []Place{{
+						//This place should NOT match filter
+						Name:     "Not a match",
+						Location: "lab",
+						Kind:     ENCLOSURE,
+					}},
+					mu: &sync.Mutex{},
+				},
 			},
 			args: args{
 				filter: &PlaceFilter{
@@ -60,16 +64,19 @@ func TestPark_ListPlaces(t *testing.T) {
 			fields: fields{
 				Dinos:      []Dinosaur{},
 				Enclosures: []Enclosure{},
-				Places: []Place{{
-					Name:     "Place1",
-					Location: "Loc1",
-					Kind:     ENCLOSURE,
+				Places: Places{
+					Places: []Place{{
+						Name:     "Place1",
+						Location: "Loc1",
+						Kind:     ENCLOSURE,
+					},
+						{
+							Name:     "Place2",
+							Location: "Loc2",
+							Kind:     LAB,
+						}},
+					mu: &sync.Mutex{},
 				},
-					{
-						Name:     "Place2",
-						Location: "Loc2",
-						Kind:     LAB,
-					}},
 			},
 			args: args{
 				filter: &PlaceFilter{
@@ -88,16 +95,19 @@ func TestPark_ListPlaces(t *testing.T) {
 			fields: fields{
 				Dinos:      []Dinosaur{},
 				Enclosures: []Enclosure{},
-				Places: []Place{{
-					Name:     "Place1",
-					Location: "Loc1",
-					Kind:     LAB,
+				Places: Places{
+					Places: []Place{{
+						Name:     "Place1",
+						Location: "Loc1",
+						Kind:     LAB,
+					},
+						{
+							Name:     "Place2",
+							Location: "Loc2",
+							Kind:     ENCLOSURE,
+						}},
+					mu: &sync.Mutex{},
 				},
-					{
-						Name:     "Place2",
-						Location: "Loc2",
-						Kind:     ENCLOSURE,
-					}},
 			},
 			args: args{
 				filter: nil,
@@ -148,6 +158,104 @@ func TestPark_ListPlaces(t *testing.T) {
 
 			if !reflect.DeepEqual(gotErr, tt.wantErr) {
 				t.Errorf("Park.ListPlaces() gotErr = %v, want %v", gotErr, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestPark_RegisterPlace(t *testing.T) {
+	type fields struct {
+		Dinos      []Dinosaur
+		Enclosures []Enclosure
+		Places     *Places
+	}
+	type args struct {
+		plcToReg *Place
+	}
+	tests := []struct {
+		name         string
+		fields       fields
+		args         args
+		wantPlcAdded *Place
+		wantErr      *Error
+	}{
+		{
+			name: "add 1 to none",
+			fields: fields{
+				Dinos:      []Dinosaur{},
+				Enclosures: []Enclosure{},
+				Places: &Places{
+					Places: []Place{},
+					mu:     &sync.Mutex{},
+				},
+			},
+			args: args{
+				plcToReg: &Place{
+					ID:       [16]byte{},
+					Name:     "Place1",
+					Location: "Loc1",
+					Kind:     LAB,
+				},
+			},
+			wantPlcAdded: &Place{
+				ID:       [16]byte{},
+				Name:     "Place1",
+				Location: "Loc1",
+				Kind:     LAB,
+			},
+			wantErr: nil,
+		},
+		{
+			name: "add 1 to 1 -> expect length of 2",
+			fields: fields{
+				Dinos:      []Dinosaur{},
+				Enclosures: []Enclosure{},
+				Places: &Places{
+					Places: []Place{Place{
+						ID:       [16]byte{},
+						Name:     "Place1",
+						Location: "Loc1",
+						Kind:     LAB,
+					}},
+					mu: &sync.Mutex{},
+				},
+			},
+			args: args{
+				plcToReg: &Place{
+					ID:       [16]byte{},
+					Name:     "Place2",
+					Location: "Loc2",
+					Kind:     LAB,
+				},
+			},
+			wantPlcAdded: &Place{
+				ID:       [16]byte{},
+				Name:     "Place2",
+				Location: "Loc2",
+				Kind:     LAB,
+			},
+			wantErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := &Park{
+				Dinos:      tt.fields.Dinos,
+				Enclosures: tt.fields.Enclosures,
+				Places:     *tt.fields.Places,
+			}
+			gotPlcAdded, gotErr := p.RegisterPlace(tt.args.plcToReg)
+			if !reflect.DeepEqual(gotPlcAdded, tt.wantPlcAdded) {
+				t.Errorf("Park.RegisterPlace() gotPlcAdded = %v, want %v", gotPlcAdded, tt.wantPlcAdded)
+			}
+			if !reflect.DeepEqual(gotErr, tt.wantErr) {
+				t.Errorf("Park.RegisterPlace() gotErr = %v, want %v", gotErr, tt.wantErr)
+			}
+
+			//COMPARE BACKING SLICE FOR CORRECT LENGTH
+			expectedLen := len(tt.fields.Places.Places) + 1 //+1 because arg takes a single place, not a list.
+			if expectedLen != len(p.Places.Places) {
+				t.Errorf("Place not added: expected number of place entries to be %d; instead had %d entries", expectedLen, len(p.Places.Places))
 			}
 		})
 	}
