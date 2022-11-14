@@ -6,28 +6,21 @@ var _ ParkControl = (*Park)(nil)
 type Park struct {
 	Dinos      []Dinosaur  //Holds references to all dinos in the park
 	Enclosures []Enclosure //Holds references to all enclosures in park
-	Places     []Place     //Holds references to all places in a park
-
+	Places     *Places     //Holds references to all places in a park
 }
 
 func NewPark() *Park {
 	return &Park{
 		Dinos:      []Dinosaur{},
 		Enclosures: []Enclosure{},
-		Places:     []Place{},
+		Places:     NewPlaces(), //NOTE: Use new func to ensure mutex is initalized
 	}
 }
 
 type ParkControl interface {
-	//PLACE CONTROL
-	//List places {by-type, by-type-and-power-status, ...}
-	ListPlaces(filter *PlaceFilter) (places []Place, err *Error)
-	//Register a new enclosure
-	RegisterPlace(plcToReg *Enclosure) (plcAdded *Enclosure, err *Error)
-	//Deregisteres a decomissioned place {lab, enclosure, etc}
-	RemovePlace(plcToRemove *Enclosure) (plcRemoved *Place, err *Error)
-
+	//
 	//DINO CONTROL
+	//
 	//List dinosaurs using dino filter
 	ListDinos(filter DinoFilter) (dinos []Dinosaur, err *Error)
 	//Registers a new dino
@@ -42,36 +35,38 @@ type ParkControl interface {
 	MoveDinos(dinosToMove []*Dinosaur, dstPlc *Place) (dinosMoved []*Dinosaur, err *Error)
 }
 
-func (p Park) ListPlaces(filter *PlaceFilter) (places []Place, err *Error) {
-	//Short-circuit: If filter empty return all
-	if filter == nil {
-		return p.Places, nil
+func (p *Park) RemovePlace(plcToRemove *Place) (plcRemoved *Place, err *Error) {
+	//Error check: missing arg
+	if plcToRemove == nil {
+		return nil, &MissingArg
 	}
 
-	//Was a filter specified?
-	var plTypeFilter *PlaceKind
-	if filter.ByKind != nil {
-		plTypeFilter = filter.ByKind
+	//Validate input
+	if !plcToRemove.Validate() {
+		return nil, &InvalidArg
 	}
 
-	//Build result by filter
-	for _, pl := range p.Places {
-		if plTypeFilter == &pl.Kind {
-			//Case: Filter matches entry add to result
-			places = append(places, pl)
-		}
-	}
-
-	return places, nil
-}
-
-func (p *Park) RegisterPlace(plcToReg *Enclosure) (plcAdded *Enclosure, err *Error) {
 	return nil, &NotImplemented
 }
 
-func (p *Park) RemovePlace(plcToRemove *Enclosure) (plcRemoved *Place, err *Error) {
+//
+// ENCLOSURE CONTROL
+//
+func (p Park) ListEnclosures(filter *EnclosureFilter) (encs []Enclosure, err *Error) {
 	return nil, &NotImplemented
 }
+
+func (p *Park) RegisterEnclosure(encToReg *Enclosure) (encAdded *Enclosure, err *Error) {
+	return nil, &NotImplemented
+}
+
+func (p *Park) RemoveEnclosure(encToRem *Enclosure) (encRemoved *Enclosure, err *Error) {
+	return nil, &NotImplemented
+}
+
+//
+// DINO CONTROL
+//
 
 func (p Park) ListDinos(filter DinoFilter) (dinos []Dinosaur, err *Error) {
 	return nil, &NotImplemented
