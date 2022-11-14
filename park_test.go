@@ -55,7 +55,67 @@ func TestPark_ListPlaces(t *testing.T) {
 			wantPlaces: []Place{},
 			wantErr:    nil,
 		},
-		//TODO: Next 1-length return
+		{
+			name: "1-length return: filter by place-kind",
+			fields: fields{
+				Dinos:      []Dinosaur{},
+				Enclosures: []Enclosure{},
+				Places: []Place{{
+					Name:     "Place1",
+					Location: "Loc1",
+					Kind:     ENCLOSURE,
+				},
+					{
+						Name:     "Place2",
+						Location: "Loc2",
+						Kind:     LAB,
+					}},
+			},
+			args: args{
+				filter: &PlaceFilter{
+					ByKind: NewPlaceKind(LAB),
+				},
+			},
+			wantPlaces: []Place{{
+				Name:     "Place2",
+				Location: "Loc2",
+				Kind:     LAB,
+			}},
+			wantErr: nil,
+		},
+		{
+			name: "All-return: no-filter",
+			fields: fields{
+				Dinos:      []Dinosaur{},
+				Enclosures: []Enclosure{},
+				Places: []Place{{
+					Name:     "Place1",
+					Location: "Loc1",
+					Kind:     LAB,
+				},
+					{
+						Name:     "Place2",
+						Location: "Loc2",
+						Kind:     ENCLOSURE,
+					}},
+			},
+			args: args{
+				filter: nil,
+			},
+			wantPlaces: []Place{
+				{
+					Name:     "Place1",
+					Location: "Loc1",
+					Kind:     LAB,
+				},
+				{
+					Name:     "Place2",
+					Location: "Loc2",
+					Kind:     ENCLOSURE,
+				},
+			},
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
