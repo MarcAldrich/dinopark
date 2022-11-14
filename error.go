@@ -16,4 +16,5 @@ var (
 	NotImplemented   = Error{http.StatusNotImplemented, "not implemented"}
 	EncInvalidConfig = Error{http.StatusUnprocessableEntity, "invalid enclosure configuration requested"}
 	EncNotEmpty      = Error{http.StatusConflict, "unable to adjust enclosure settings while dinos in the enclosure"}
+	MissingArg       = Error{http.StatusBadRequest, "missing an argument"}
 )

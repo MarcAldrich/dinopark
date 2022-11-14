@@ -1,13 +1,28 @@
 package dinopark
 
+import "github.com/google/uuid"
+
 // This line ensures that the interface is fully implemented at compile time which avoids waiting for a runtime panic without it.
 var _ EnclosureControl = (*Enclosure)(nil)
 
 // The enclosure struct digitally represents the physical cage in the park
 type Enclosure struct {
+	ID         uuid.UUID
 	contains   []*Dinosaur
 	capacity   *EnclosureCapacity
 	powerState bool
+}
+
+func NewEnclosure(cap *EnclosureCapacity) (newEnc *Enclosure, err *Error) {
+	if cap == nil {
+		return nil, &MissingArg
+	}
+	return &Enclosure{
+		ID:         uuid.New(),
+		contains:   []*Dinosaur{},
+		capacity:   cap,
+		powerState: false,
+	}, err
 }
 
 type EnclosureCapacity struct {
@@ -38,7 +53,11 @@ type EnclosureControl interface {
 }
 
 type EnclosureFilter struct {
-	//TODO: implement business reqs with filter statements over from readme
+	ByPowerState        bool        //Use-case: Find all "DOWN" enclosures
+	ByNumberOfDinos     uint16      //Helpful to find empty enclosures
+	ByCapacityRemaining uint16      //Use-case: find an enclosure with room for a dino
+	BySpecies           DinoSpecies //Use-case: find enclosures with same species
+	ByDiet              DinoDiet    //Use-case: find an enclosure with only herbivores/carnivores
 }
 
 func (e *Enclosure) ListDinosInEnclosure(filterOpts *EnclosureFilter) (dinosInCage []*Dinosaur, err *Error) {
